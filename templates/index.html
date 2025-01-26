@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instrument Classifier</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-image: url("https://media.istockphoto.com/id/161673238/video/floating-musical-notes-pastel-blue.jpg?s=640x640&k=20&c=bik73Xaum77hu1xRTzd0a_nFj0KMaVEIsvUT9qRn3kQ=");
+        }
+
+        /* Transparent overlay for the background */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);  /* Adjust transparency */
+            z-index: 1;  /* Ensure it stays behind the content */
+        }
+
+        /* Center the content */
+        form, h1, h2 {
+            position: relative;
+            z-index: 2; /* Ensure it stays above the background */
+        }
+
+        form {
+            margin: 20px 0;
+        }
+        button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:active {
+            background-color: darkblue;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        label:hover {
+            background-color: #0056b3;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: red;
+        }
+
+        #instrument-image {
+            display: none;
+            max-width: 300px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload a .wav file to classify the musical instrument</h1>
+    <form action="/predict" method="POST" enctype="multipart/form-data">
+        <label for="file">Choose a file</label>
+        <input type="file" id="file" name="file" accept=".wav" required>
+        <button type="submit">Upload</button>
+    </form>
+    <h2 id="result"></h2>
+    <img id="instrument-image" src="" alt="Instrument Image">
+
+    <script>
+        document.querySelector('form').onsubmit = async function(event) {
+            event.preventDefault();
+
+            let formData = new FormData(this);
+            let response = await fetch('/predict', {
+                method: 'POST',
+                body: formData
+            });
+
+            let data = await response.json();
+            let resultElement = document.getElementById('result');
+            let imageElement = document.getElementById('instrument-image');
+
+            if (data.predicted_label) {
+                resultElement.innerText = 'Predicted Instrument: ' + data.predicted_label;
+                imageElement.src = data.image_path;
+                imageElement.style.display = 'block';
+            } else {
+                resultElement.innerText = 'Error: ' + data.error;
+                imageElement.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
